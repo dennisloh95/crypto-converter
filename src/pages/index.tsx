@@ -57,6 +57,6 @@ export async function getServerSideProps() {
   ).then((res) => res.json());
 
   return {
-    props: { rate: data }, // will be passed to the page component as props
+    props: { rate: Object.keys(data).length ? data : null },
   };
 }
