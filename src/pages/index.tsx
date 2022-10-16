@@ -5,6 +5,7 @@ import CurrentPrice from "../components/CurrentPrice";
 import ExchangeRate from "../components/ExchangeRate";
 import shallow from "zustand/shallow";
 import { InferGetStaticPropsType } from "next";
+import Head from "next/head";
 
 const Home: NextPage<InferGetStaticPropsType<typeof getServerSideProps>> = ({
   rate,
@@ -26,6 +27,10 @@ const Home: NextPage<InferGetStaticPropsType<typeof getServerSideProps>> = ({
 
   return (
     <div className="container overflow-hidden mx-auto my-5 text-white divide-y divide-gray-300 px-5 md:px-3">
+      <Head>
+        <title>La Coco Crypto Exchange</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <div className="flex flex-col justify-between items-baseline py-5 md:flex-row">
         <h1 className="text-2xl font-bold title">La Coco Crypto Exchange</h1>
         <p className="text-gray-400 text-sm mt-1 date">{currentDateTime}</p>
