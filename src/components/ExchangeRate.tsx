@@ -12,7 +12,7 @@ const ExchangeRate = () => {
     shallow
   );
 
-  const [values, setValues] = useState({
+  const [coin, setCoin] = useState({
     base: "bitcoin",
     currency: "ethereum",
   });
@@ -29,11 +29,11 @@ const ExchangeRate = () => {
 
   useEffect(() => {
     calculateExchangeRate();
-  }, [rateData, values]);
+  }, [rateData, coin]);
 
   const currencyOnChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setValues({ ...values, [name]: value });
+    setCoin({ ...coin, [name]: value });
   };
 
   const amountsOnChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +60,7 @@ const ExchangeRate = () => {
   };
 
   const handleSwap = () => {
-    setValues((prev) => ({
+    setCoin((prev) => ({
       base: prev.currency,
       currency: prev.base,
     }));
@@ -69,8 +69,8 @@ const ExchangeRate = () => {
   const calculateExchangeRate = () => {
     if (!rateData) return;
     const rateAmount =
-      rateData[values.base as keyof Rate]["usd"] /
-      rateData[values.currency as keyof Rate]["usd"];
+      rateData[coin.base as keyof Rate]["usd"] /
+      rateData[coin.currency as keyof Rate]["usd"];
     setRate(rateAmount);
     const currencyAmounts =
       parseFloat(amounts.baseAmounts.toString()) * rateAmount;
@@ -97,23 +97,23 @@ const ExchangeRate = () => {
               name="base"
               className="w-20 bg-transparent"
               onChange={currencyOnChange}
-              value={values.base}
+              value={coin.base}
             >
-              {supportedCoins
-                .filter(
-                  (item) =>
-                    item.id.toLowerCase() !== values.currency.toLowerCase()
-                )
-                .map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.symbol.toUpperCase()}
-                  </option>
-                ))}
+              {supportedCoins.map((option) => (
+                <option
+                  key={option.id}
+                  value={option.id}
+                  disabled={option.id === coin.currency}
+                >
+                  {option.symbol.toUpperCase()}
+                </option>
+              ))}
             </select>
           </div>
         </div>
         <button
           className="bg-violet-700 p-3 text-xl rounded-full mx-3 mt-2 lg:my-0"
+          id="swap-btn"
           onClick={handleSwap}
         >
           <BsArrowRepeat />
@@ -134,27 +134,24 @@ const ExchangeRate = () => {
               name="currency"
               className="w-20 bg-transparent"
               onChange={currencyOnChange}
-              value={values.currency}
+              value={coin.currency}
             >
-              {supportedCoins
-                .filter(
-                  (item) => item.id.toLowerCase() !== values.base.toLowerCase()
-                )
-                .map((option) => (
-                  <option
-                    key={option.id}
-                    value={option.id}
-                    className="uppercase"
-                  >
-                    {option.symbol.toUpperCase()}
-                  </option>
-                ))}
+              {supportedCoins.map((option) => (
+                <option
+                  key={option.id}
+                  value={option.id}
+                  className="uppercase"
+                  disabled={option.id === coin.base}
+                >
+                  {option.symbol.toUpperCase()}
+                </option>
+              ))}
             </select>
           </div>
         </div>
       </div>
       <div className="capitalize text-gray-400 text-sm mt-2">
-        {rate && `1 ${values.base} = ${rate} ${values.currency}`}
+        {rate && `1 ${coin.base} = ${rate} ${coin.currency}`}
       </div>
     </div>
   );

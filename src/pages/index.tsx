@@ -1,52 +1,36 @@
 import type { NextPage } from "next";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import dayjs from "dayjs";
-import Image from "next/image";
-import { BsArrowRepeat } from "react-icons/bs";
+import { useEffect } from "react";
 import { useRateStore, supportedCoins } from "../store";
-import { Rate } from "../utils/types";
 import CurrentPrice from "../components/CurrentPrice";
 import ExchangeRate from "../components/ExchangeRate";
 import shallow from "zustand/shallow";
+import { InferGetStaticPropsType } from "next";
 
-const Home: NextPage = () => {
-  const { data, loading, error, getRate } = useRateStore(
+const Home: NextPage<InferGetStaticPropsType<typeof getServerSideProps>> = ({
+  rate,
+}) => {
+  const { data, currentDateTime, setData } = useRateStore(
     (state) => ({
       data: state.data,
-      loading: state.loading,
-      error: state.error,
-      getRate: state.getRate,
+      currentDateTime: state.currentDateTime,
+      setData: state.setData,
     }),
     shallow
   );
-  const [date, setDate] = useState("");
 
   // Fix for: "Error: Text content does not match server-rendered HTML."
   // https://nextjs.org/docs/messages/react-hydration-error
   useEffect(() => {
-    setDate(dayjs().format("DD/MM/YYYY dddd hh:mm A"));
-  }, []);
-
-  useEffect(() => {
-    const ids = supportedCoins.map((option) => option.id).join(",");
-    getRate(ids);
+    setData(rate);
   }, []);
 
   return (
     <div className="container overflow-hidden mx-auto my-5 text-white divide-y divide-gray-300 px-5 md:px-3">
       <div className="flex flex-col justify-between items-baseline py-5 md:flex-row">
-        <h1 className="text-2xl font-bold">La Coco Crypto Exchange</h1>
-        <p className="text-gray-400 text-sm mt-1">{date}</p>
+        <h1 className="text-2xl font-bold title">La Coco Crypto Exchange</h1>
+        <p className="text-gray-400 text-sm mt-1 date">{currentDateTime}</p>
       </div>
-      {loading ? (
-        <div className="font-bold text-2xl text-gray-500 text-center py-5 text-center w-full">
-          loading...
-        </div>
-      ) : error ? (
-        <p className="font-bold text-2xl text-rose-600 text-center py-5 capitalize text-center w-full">
-          {error}
-        </p>
-      ) : data ? (
+      {data ? (
         <div className="py-5 flex gap-3 flex-col-reverse md:flex-row">
           <div className="w-full md:w-2/6">
             <CurrentPrice />
@@ -65,3 +49,14 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+export async function getServerSideProps() {
+  const ids = supportedCoins.map((option) => option.id).join(",");
+  const data = await fetch(
+    `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=${"usd"}`
+  ).then((res) => res.json());
+
+  return {
+    props: { rate: data }, // will be passed to the page component as props
+  };
+}

@@ -4,12 +4,9 @@ import { Rate } from "../utils/types";
 
 interface RateStoreState {
   data: Rate | null;
-  loading: boolean;
   lastUpdate: string;
-  error: string;
-  getRate: (ids: string) => void;
-  setLoading: () => void;
-  setError: (err: string) => void;
+  currentDateTime: string;
+  setData: (data: Rate) => void;
 }
 
 const supportedCoins = [
@@ -34,41 +31,15 @@ const supportedCoins = [
 
 const useRateStore = create<RateStoreState>((set, get) => ({
   data: null,
-  loading: false,
-  error: "",
   lastUpdate: "",
-  getRate: async (ids) => {
-    try {
-      set(() => ({
-        loading: false,
-      }));
-      const res = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=${"usd"}`
-      );
-      if (!res) {
-        throw new Error("No data");
-      }
-      const resData: Rate = await res.json();
-      set({
-        data: resData,
-        loading: false,
-        error: "",
-        lastUpdate: dayjs().format("hh:mm A"),
-      });
-    } catch (err) {
-      get().setError((err as DOMException).message);
-    }
+  currentDateTime: "",
+  setData: (data: Rate) => {
+    set(() => ({
+      data: data,
+      currentDateTime: dayjs().format("DD/MM/YYYY dddd hh:mm A"),
+      lastUpdate: dayjs().format("hh:mm A"),
+    }));
   },
-  setLoading: () =>
-    set(() => ({
-      loading: true,
-    })),
-  setError: (err: string) =>
-    set(() => ({
-      data: null,
-      loading: false,
-      error: err,
-    })),
 }));
 
 export { useRateStore, supportedCoins };
